@@ -25,9 +25,9 @@ public class SoftwareCostEstimation extends GPProblem {
 
 
         config.setGPFitnessEvaluator(new DeltaGPFitnessEvaluator());
-        config.setMaxInitDepth(20);
+        config.setMaxInitDepth(3);
         config.setPopulationSize(1000);
-        config.setMaxCrossoverDepth(40);
+        config.setMaxCrossoverDepth(5);
         config.setFitnessFunction(new SoftwareCostFitnessFunction(variables, ds));
         config.setStrictProgramCreation(true);
     }
