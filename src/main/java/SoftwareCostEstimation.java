@@ -1,41 +1,34 @@
 import org.jgap.InvalidConfigurationException;
 import org.jgap.gp.CommandGene;
 import org.jgap.gp.GPProblem;
-import org.jgap.gp.function.Add;
-import org.jgap.gp.function.Divide;
-import org.jgap.gp.function.Multiply;
-import org.jgap.gp.function.Subtract;
+import org.jgap.gp.function.*;
 import org.jgap.gp.impl.DeltaGPFitnessEvaluator;
 import org.jgap.gp.impl.GPConfiguration;
 import org.jgap.gp.impl.GPGenotype;
 import org.jgap.gp.terminal.Terminal;
 import org.jgap.gp.terminal.Variable;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class SoftwareCostEstimation extends GPProblem {
-    @SuppressWarnings("boxing")
-    private static Integer[] INPUT_1 = { 26, 8, 20, 33, 37 };
 
-    @SuppressWarnings("boxing")
-    private static Integer[] INPUT_2 = { 35, 24, 1, 11, 16 };
+    private List<Variable> variables;
 
-    private static int[] OUTPUT = { 829, 141, 467, 1215, 1517 };
-
-    private Variable _xVariable;
-    private Variable _yVariable;
-
-    public SoftwareCostEstimation() throws InvalidConfigurationException {
+    public SoftwareCostEstimation(DataSet ds) throws InvalidConfigurationException {
         super(new GPConfiguration());
-
         GPConfiguration config = getGPConfiguration();
+        variables = new LinkedList<>();
+        for (String name : ds.getVariables()) {
+            variables.add(Variable.create(config, name, CommandGene.DoubleClass));
+        }
 
-        _xVariable = Variable.create(config, "X", CommandGene.IntegerClass);
-        _yVariable = Variable.create(config, "Y", CommandGene.IntegerClass);
 
         config.setGPFitnessEvaluator(new DeltaGPFitnessEvaluator());
-        config.setMaxInitDepth(4);
+        config.setMaxInitDepth(20);
         config.setPopulationSize(1000);
-        config.setMaxCrossoverDepth(8);
-        config.setFitnessFunction(new SoftwareCostFitnessFunction(INPUT_1, INPUT_2, OUTPUT, _xVariable, _yVariable));
+        config.setMaxCrossoverDepth(40);
+        config.setFitnessFunction(new SoftwareCostFitnessFunction(variables, ds));
         config.setStrictProgramCreation(true);
     }
 
@@ -44,22 +37,33 @@ public class SoftwareCostEstimation extends GPProblem {
         GPConfiguration config = getGPConfiguration();
 
         // The return type of the GP program.
-        Class[] types = { CommandGene.IntegerClass };
+        Class[] types = {CommandGene.DoubleClass};
 
         // Arguments of result-producing chromosome: none
-        Class[][] argTypes = { {} };
+        Class[][] argTypes = {{}};
+
+        CommandGene[] funcNodes = {
+                new Add(config, CommandGene.DoubleClass),
+                new Multiply(config, CommandGene.DoubleClass),
+                new Subtract(config, CommandGene.DoubleClass),
+                new Divide(config, CommandGene.DoubleClass),
+//                new Pow(config, CommandGene.DoubleClass),
+//                new Log(config, CommandGene.DoubleClass),
+                new Terminal(config, CommandGene.DoubleClass, 0.0, 100, false)
+        };
+
+        CommandGene[] varNodes = new CommandGene[variables.size()];
+        variables.toArray(varNodes);
+        int i = 0;
+
+        CommandGene[] allNodes = new CommandGene[funcNodes.length + varNodes.length];
+        System.arraycopy(varNodes, 0, allNodes, 0, varNodes.length);
+        System.arraycopy(funcNodes, 0, allNodes, varNodes.length, funcNodes.length);
 
         // Next, we define the set of available GP commands and terminals to
         // use.
         CommandGene[][] nodeSets = {
-                {
-                        _xVariable,
-                        _yVariable,
-                        new Add(config, CommandGene.IntegerClass),
-                        new Multiply(config, CommandGene.IntegerClass),
-                        new Subtract(config,CommandGene.IntegerClass),
-                        new Terminal(config, CommandGene.IntegerClass, 0.0, 10.0, true)
-                }
+                allNodes
         };
 
         GPGenotype result = GPGenotype.randomInitialGenotype(config, types, argTypes,
@@ -68,15 +72,15 @@ public class SoftwareCostEstimation extends GPProblem {
         return result;
     }
 
-    public static void main(String[] args) throws Exception {
-        GPProblem problem = new SoftwareCostEstimation();
-
-        GPGenotype gp = problem.create();
-        gp.setVerboseOutput(true);
-        gp.evolve(30);
-
-        System.out.println("Formula to discover: x^2 + 2y + 3x + 5");
-        gp.outputSolution(gp.getAllTimeBest());
-    }
+//    public static void main(String[] args) throws Exception {
+//        GPProblem problem = new SoftwareCostEstimation();
+//
+//        GPGenotype gp = problem.create();
+//        gp.setVerboseOutput(true);
+//        gp.evolve(30);
+//
+//        System.out.println("Formula to discover: x^2 + 2y + 3x + 5");
+//        gp.outputSolution(gp.getAllTimeBest());
+//    }
 
 }
