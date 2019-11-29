@@ -11,11 +11,11 @@ import org.jgap.gp.terminal.Variable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SoftwareCostEstimation extends GPProblem {
+public class SoftwareCostEstimationProblem extends GPProblem {
 
     private List<Variable> variables;
 
-    public SoftwareCostEstimation(DataSet ds) throws InvalidConfigurationException {
+    public SoftwareCostEstimationProblem(DataSet ds) throws InvalidConfigurationException {
         super(new GPConfiguration());
         GPConfiguration config = getGPConfiguration();
         variables = new LinkedList<>();
@@ -25,9 +25,9 @@ public class SoftwareCostEstimation extends GPProblem {
 
 
         config.setGPFitnessEvaluator(new DeltaGPFitnessEvaluator());
-        config.setMaxInitDepth(3);
+        config.setMaxInitDepth(5);
         config.setPopulationSize(1000);
-        config.setMaxCrossoverDepth(5);
+        config.setMaxCrossoverDepth(10);
         config.setFitnessFunction(new SoftwareCostFitnessFunction(variables, ds));
         config.setStrictProgramCreation(true);
     }
@@ -47,8 +47,16 @@ public class SoftwareCostEstimation extends GPProblem {
                 new Multiply(config, CommandGene.DoubleClass),
                 new Subtract(config, CommandGene.DoubleClass),
                 new Divide(config, CommandGene.DoubleClass),
-//                new Pow(config, CommandGene.DoubleClass),
-//                new Log(config, CommandGene.DoubleClass),
+                new Pow(config, CommandGene.DoubleClass),
+                new Log(config, CommandGene.DoubleClass),
+                new If(config, CommandGene.DoubleClass),
+                new IfElse(config, CommandGene.DoubleClass),
+                new Loop(config, CommandGene.DoubleClass, 10),
+                new Modulo(config, CommandGene.DoubleClass),
+                new Equals(config, CommandGene.DoubleClass),
+                new Or(config),
+                new And(config),
+                new Xor(config),
                 new Terminal(config, CommandGene.DoubleClass, 0.0, 100, false)
         };
 
@@ -60,8 +68,7 @@ public class SoftwareCostEstimation extends GPProblem {
         System.arraycopy(varNodes, 0, allNodes, 0, varNodes.length);
         System.arraycopy(funcNodes, 0, allNodes, varNodes.length, funcNodes.length);
 
-        // Next, we define the set of available GP commands and terminals to
-        // use.
+        // Define the set of available GP commands and terminals to use.
         CommandGene[][] nodeSets = {
                 allNodes
         };
@@ -71,16 +78,5 @@ public class SoftwareCostEstimation extends GPProblem {
 
         return result;
     }
-
-//    public static void main(String[] args) throws Exception {
-//        GPProblem problem = new SoftwareCostEstimation();
-//
-//        GPGenotype gp = problem.create();
-//        gp.setVerboseOutput(true);
-//        gp.evolve(30);
-//
-//        System.out.println("Formula to discover: x^2 + 2y + 3x + 5");
-//        gp.outputSolution(gp.getAllTimeBest());
-//    }
 
 }

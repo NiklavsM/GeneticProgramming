@@ -29,11 +29,10 @@ public class SoftwareCostFitnessFunction extends GPFitnessFunction {
             double value = program.execute_double(0, NO_ARGS);
 
             // The closer longResult gets to 0 the better the algorithm.
-            longResult += Math.abs(value - instance.getEffort()) / instance.getEffort() * 100;
-//            System.out.println("instance.effort " + instance.effort);
+            longResult += (Math.abs(value - instance.getEffort()) / instance.getEffort() * 100);
         }
 
-        return longResult / dataSet.getInstances().size();
+        return longResult / dataSet.getInstances().size(); // Mean relative absolute error
     }
 
 }

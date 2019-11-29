@@ -13,15 +13,7 @@ public class Instance {
         return effort;
     }
 
-    public void setEffort(Double effort) {
-        this.effort = effort;
-    }
-
     public Map<String, Double> getAttributes() {
         return attributes;
-    }
-
-    public void setAttributes(Map<String, Double> attributes) {
-        this.attributes = attributes;
     }
 }

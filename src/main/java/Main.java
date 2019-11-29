@@ -18,27 +18,25 @@ public class Main {
         System.out.println("2: china.arrt");
         switch (sc.nextLine()) {
             case "1":
-                ds = fl.getDataSet("albrecht.arff");
+                ds = fl.getDataSet("/albrecht.arff");
                 break;
             case "2":
-                ds = fl.getDataSet("china.arff");
+                ds = fl.getDataSet("/china.arff");
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + sc.nextLine());
         }
-
         double testingRatio = 0.2;
 
         DataSet dsValidate = new DataSet(ds.getVariables(), ds.getInstances().subList(0, (int) (ds.getInstances().size() * testingRatio))); // Dataset used for model validation 0.2
         DataSet dsTrain = new DataSet(ds.getVariables(), ds.getInstances().subList((int) (ds.getInstances().size() * testingRatio), ds.getInstances().size())); // Dataset used for model training 0.8
-        ds.getVariables().forEach(System.out::println);
-        ds.getInstances().forEach(instance -> System.out.println(instance.getAttributes().values().toString()));
+
         try {
-            GPProblem problem = new SoftwareCostEstimation(dsTrain);
+            GPProblem problem = new SoftwareCostEstimationProblem(dsTrain);
 
             GPGenotype gp = problem.create();
             gp.setVerboseOutput(true);
-            gp.evolve(1000);
+            gp.evolve(500);
             gp.outputSolution(gp.getAllTimeBest());
 
             validate(gp.getAllTimeBest(), dsValidate);
@@ -56,7 +54,6 @@ public class Main {
                 varIndex++;
             }
             double val = gp.execute_double(0, new Object[]{});
-//            System.out.println((Math.abs(i.getEffort() - val) / i.getEffort() * 100));
             mrae += (Math.abs(i.getEffort() - val) / i.getEffort() * 100);
 
         }
